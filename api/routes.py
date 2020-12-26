@@ -1,14 +1,8 @@
-#!/usr/bin/python3
-
-import flask
-from flask import Flask, render_template, url_for, flash, redirect
-from flask import request, jsonify
-from forms import RegistrationForm, LoginForm
-
-app = Flask(__name__)
-
-app.config['SECRET_KEY'] = '78192317937fc773856866c82a6f4297'
-
+from flask import render_template, url_for, flash, redirect
+from api import app, db, bcrypt
+from api.forms import RegistrationForm, LoginForm
+from api.models import User, Post
+from flask_login import login_user, current_user
 
 course = [
     {
@@ -70,15 +64,31 @@ def protocols():
 
 @app.route('/register', methods=['GET','POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        flash(f'Account created for {form.username.data}!', 'success')
-        return redirect(url_for('home'))
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        flash(f'Your account has been created!', 'success')
+        return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form )
 
-@app.route('/login')
+@app.route('/login', methods=['GET','POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            flash(f'Login Success!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Login Failed. Please check your email and password', 'danger')
     return render_template('login.html', title='Login', form=form )
 
 @app.route('/about', methods=['GET'])
@@ -96,6 +106,3 @@ def api_all():
 @app.route('/api/protocols', methods=['GET'])
 def api_protocols():
     return jsonify(protocols)
-
-if __name__ == '__main__':
-    app.run(port=80, debug=True, host='0.0.0.0',)
