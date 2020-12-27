@@ -1,5 +1,5 @@
 from datetime import datetime
-from api import db, login_manager
+from NetAPI import db, login_manager
 from flask_login import UserMixin
 
 @login_manager.user_loader
@@ -12,7 +12,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
-    posts = db.relationship('Post', backref='author', lazy=True)
+    posts = db.relationship('Protocol', backref='author', lazy=True)
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
@@ -37,6 +37,7 @@ class Protocol(db.Model):
     purpose = db.Column(db.String(200), nullable=False)
     wiki_link = db.Column(db.String(100), nullable=False)
     rfc_link = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
-        return f"Post('{self.name}', '{self.acronym}')"
+        return f"Protocol('{self.name}', '{self.acronym}', '{self.port}', '{self.layer}','{self.rfc}', '{self.purpose}', '{self.wiki_link}', '{self.rfc_link}')"

@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Protocols</h1>
+    <article class="media content-section">
+      <div class="media-body">
+        <div class="article-metadata">
+            {% if protocol.author == current_user %}
+            <div>
+                <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('update_protocol', protocol_id=protocol.id)}}">Update</a>
+                <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+            </div>
+            {% endif %}
+          <a class="mr-2" href="#">{{ protocol.name }}</a>
+          <small class="text-muted">RFC {{ protocol.rfc }}</small>
+        </div>
+        <h2><a class="article-title">{{ protocol.acronym }}</a></h2>
+        <p class="article-content">{{ protocol.purpose }}</p>
+      </div>
+    </article>
+    <!---Modal--->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete Protocol?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body"--->
+            <p>Are you sure you want to delete this protocol?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <form action="{{ url_for('delete_protocol', protocol_id=protocol.id) }}" method="POST">
+                <input class="btn btn-danger" type="submit" value="Delete">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock content%}
